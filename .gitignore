@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing
+coverage/
+.pytest_cache/
+
+# Next.js build
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
