@@ -92,7 +92,7 @@ class FirmsClient:
             # Fall back to default if sensor is unrecognized
             source = settings.default_sensor
 
-        day_range = max(1, min(10, day_range))
+        day_range = max(1, min(5, day_range))
         bbox_str = self.format_area_bbox(min_lat, min_lon, max_lat, max_lon)
 
         cache_key = f"firms:{source}:{bbox_str}:{day_range}"
@@ -110,16 +110,32 @@ class FirmsClient:
             async with httpx.AsyncClient(timeout=20.0) as client:
                 resp = await client.get(url)
 
+                
                 if resp.status_code == 401 or resp.status_code == 403:
-                    raise FirmsAuthError("NASA FIRMS rejected MAP_KEY. Verify your key validity.")
+                    raise FirmsAuthError(
+                        "NASA FIRMS rejected MAP_KEY. Verify your key validity."
+                    )
                 elif resp.status_code == 429:
-                    raise FirmsRateLimitError("NASA FIRMS rate limit exceeded. Please wait before retrying.")
+                    raise FirmsRateLimitError(
+                        "NASA FIRMS rate limit exceeded. Please wait before retrying."
+                    )
                 elif resp.status_code >= 500:
-                    raise FirmsUpstreamError(f"NASA FIRMS upstream server error (HTTP {resp.status_code}).")
+                    raise FirmsUpstreamError(
+                        f"NASA FIRMS upstream server error (HTTP {resp.status_code})."
+                    )
                 elif resp.status_code != 200:
-                    raise FirmsClientError(f"Unexpected FIRMS API response: HTTP {resp.status_code}")
+                    logger.error(
+                        "NASA FIRMS HTTP %s response: %s",
+                        resp.status_code,
+                        resp.text[:1000],
+                    )
+                    raise FirmsClientError(
+                        f"Unexpected FIRMS API response: HTTP {resp.status_code}. "
+                        f"Details: {resp.text[:500]}"
+                    )
 
                 csv_text = resp.text
+
 
         except httpx.TimeoutException:
             raise FirmsUpstreamError("NASA FIRMS API request timed out (20s limit).")
